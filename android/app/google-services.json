@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "379778232466",
+    "project_id": "cmsc4303-gregg-lesson3",
+    "storage_bucket": "cmsc4303-gregg-lesson3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:379778232466:android:4a36e3825f37f52b4cf64b",
+        "android_client_info": {
+          "package_name": "edu.uco.glee16.cmsc4303.lesson3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "379778232466-42th6oofvl3sho4egaprpq1oj5cm7geu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxbprDF5p-37d4b5a7zfce-JhCX9-hSoU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "379778232466-42th6oofvl3sho4egaprpq1oj5cm7geu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

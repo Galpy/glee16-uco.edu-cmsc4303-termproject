@@ -12,17 +12,13 @@ class WebImage extends Image {
           key: key,
           errorBuilder:
               (BuildContext context, Object exception, StackTrace? stackTrace) {
-            print('================= web image error: $exception');
             return Icon(
               Icons.error,
               size: height,
             );
           },
-          loadingBuilder: (
-            BuildContext context,
-            Widget child,
-            ImageChunkEvent? loadingProgress,
-          ) {
+          loadingBuilder: (BuildContext context, Widget child,
+              ImageChunkEvent? loadingProgress) {
             if (loadingProgress == null) {
               return child;
             } else {

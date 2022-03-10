@@ -37,6 +37,33 @@ class PhotoMemo {
     this.sharedWith = sharedWith == null ? [] : [...sharedWith];
   }
 
+  PhotoMemo.clone(PhotoMemo p) {
+    docId = p.docId;
+    createdBy = p.createdBy;
+    title = p.title;
+    memo = p.memo;
+    photoFilename = p.photoFilename;
+    photoURL = p.photoURL;
+    timeStamp = p.timeStamp;
+    sharedWith = [...p.sharedWith];
+    imageLabels = [...p.imageLabels];
+  }
+
+  // a.copyFrom(b) ==> a = b
+  void copyFrom(PhotoMemo p) {
+    docId = p.docId;
+    createdBy = p.createdBy;
+    title = p.title;
+    memo = p.memo;
+    photoFilename = p.photoFilename;
+    photoURL = p.photoURL;
+    timeStamp = p.timeStamp;
+    sharedWith.clear();
+    sharedWith.addAll(p.sharedWith);
+    imageLabels.clear();
+    imageLabels.addAll(p.imageLabels);
+  }
+
   // serialization
   Map<String, dynamic> toFirestoreDoc() {
     return {

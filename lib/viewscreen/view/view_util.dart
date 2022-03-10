@@ -7,7 +7,7 @@ void showSnackBar({
 }) {
   final snackBar = SnackBar(
     content: Text(message),
-    duration: Duration(seconds: seconds ?? 3), // 3 seccond default
+    duration: Duration(seconds: seconds ?? 3), // 3 sec default
     action: SnackBarAction(
       label: 'OK',
       onPressed: () {},
@@ -32,7 +32,7 @@ void showAlertDialog({
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('OK'),
-            ),
+            )
           ],
           content: widget,
         );
@@ -41,15 +41,14 @@ void showAlertDialog({
 
 void startCircularProgress(BuildContext context) {
   showDialog(
-    context: context,
-    builder: (context) {
-      return const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 10.0,
-        ),
-      );
-    },
-  );
+      context: context,
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 10.0,
+          ),
+        );
+      });
 }
 
 void stopCircularProgress(BuildContext context) {

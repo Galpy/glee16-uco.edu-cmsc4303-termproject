@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:lesson3/model/constant.dart';
 import 'package:uuid/uuid.dart';
+
+import '../model/constant.dart';
 
 class CloudStorageController {
   static Future<Map<ArgKey, String>> uploadPhotoFile({
@@ -20,10 +22,15 @@ class CloudStorageController {
 
     TaskSnapshot snapshot = await task;
     String downloadURL = await snapshot.ref.getDownloadURL();
-
     return {
       ArgKey.downloadURL: downloadURL,
       ArgKey.filename: filename,
     };
+  }
+
+  static Future<void> deleteFile({
+    required String filename,
+  }) async {
+    await FirebaseStorage.instance.ref().child(filename).delete();
   }
 }

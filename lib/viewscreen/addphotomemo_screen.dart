@@ -187,6 +187,7 @@ class _Controller {
           await GoogleMlController.getImageLabels(photo: state.photo!);
       tempMemo.createdBy = state.widget.user.email!;
       tempMemo.timeStamp = DateTime.now(); //millisec from 1970/1/1
+      tempMemo.comments = List.generate(1, (index) => ' ', growable: true);
 
       String docId =
           await FireStoreController.addPhotoMemo(photoMemo: tempMemo);

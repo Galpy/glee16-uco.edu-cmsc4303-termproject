@@ -121,35 +121,52 @@ class _UserHomeState extends State<UserHomeScreen> {
             : ListView.builder(
                 itemCount: con.photoMemoList.length,
                 itemBuilder: (context, index) {
-                  return ListTile(
-                    selected: con.selected.contains(index),
-                    selectedTileColor: Colors.blue[100],
-                    tileColor: Colors.white,
-                    leading: WebImage(
-                      url: con.photoMemoList[index].photoURL,
-                      context: context,
+                  return Container(
+                    margin: const EdgeInsets.all(10.0),
+                    child: ListTile(
+                      selected: con.selected.contains(index),
+                      selectedTileColor: Colors.blue[100],
+                      tileColor: Colors.white,
+                      leading: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: const [
+                          Icon(Icons.thumb_up_sharp),
+                          Text('10'),
+                        ],
+                      ),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: const [
+                          Icon(Icons.thumb_down_sharp),
+                          Text('1'),
+                        ],
+                      ),
+                      title: Column(
+                        children: [
+                          WebImage(
+                            url: con.photoMemoList[index].photoURL,
+                            context: context,
+                          ),
+                          Text(con.photoMemoList[index].title),
+                        ],
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            con.photoMemoList[index].memo.length >= 40
+                                ? con.photoMemoList[index].memo
+                                        .substring(0, 40) +
+                                    '...'
+                                : con.photoMemoList[index].memo,
+                          ),
+                          Text(
+                              'Created By: ${con.photoMemoList[index].createdBy}'),
+                        ],
+                      ),
+                      onTap: () => con.onTap(index),
+                      onLongPress: () => con.onLongPress(index),
                     ),
-                    trailing: const Icon(Icons.arrow_right),
-                    title: Text(con.photoMemoList[index].title),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          con.photoMemoList[index].memo.length >= 40
-                              ? con.photoMemoList[index].memo.substring(0, 40) +
-                                  '...'
-                              : con.photoMemoList[index].memo,
-                        ),
-                        Text(
-                            'Created By: ${con.photoMemoList[index].createdBy}'),
-                        Text(
-                            'Shared With: ${con.photoMemoList[index].sharedWith}'),
-                        Text(
-                            'TimeStamp: ${con.photoMemoList[index].timeStamp}'),
-                      ],
-                    ),
-                    onTap: () => con.onTap(index),
-                    onLongPress: () => con.onLongPress(index),
                   );
                 },
               ),

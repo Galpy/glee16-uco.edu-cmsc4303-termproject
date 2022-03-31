@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lesson3/controller/cloudstorage_controller.dart';
 import 'package:lesson3/controller/firestore_controller.dart';
@@ -49,8 +50,8 @@ class _DetailedViewState extends State<DetailedViewScreen> {
         title: const Text('Detailed View'),
         actions: [
           editMode
-              ? IconButton(onPressed: con.update, icon: Icon(Icons.check))
-              : IconButton(onPressed: con.edit, icon: Icon(Icons.edit))
+              ? IconButton(onPressed: con.update, icon: const Icon(Icons.check))
+              : IconButton(onPressed: con.edit, icon: const Icon(Icons.edit))
         ],
       ),
       body: Form(
@@ -128,23 +129,40 @@ class _DetailedViewState extends State<DetailedViewScreen> {
                 validator: PhotoMemo.validateMemo,
                 onSaved: con.saveMemo,
               ),
-              TextFormField(
-                enabled: editMode,
-                style: Theme.of(context).textTheme.bodyText1,
-                decoration: const InputDecoration(
-                  hintText: 'Enter Shared With: email list',
-                ),
-                initialValue: con.tempMemo.sharedWith.join(' '),
-                keyboardType: TextInputType.multiline,
-                maxLines: 6,
-                validator: PhotoMemo.validateSharedWith,
-                onSaved: con.saveShareWith,
+              Column(
+                children: [
+                  TextFormField(
+                    enabled: true,
+                    style: Theme.of(context).textTheme.headline6,
+                    decoration:
+                        const InputDecoration(hintText: 'Enter comment'),
+                    initialValue: con.tempMemo.comments.join('\n'),
+                    validator: PhotoMemo.validateComment,
+                    onSaved: con.saveComment,
+                  ),
+                  IconButton(
+                    onPressed: con.addComment,
+                    icon: const Icon(Icons.comment),
+                  ),
+                ],
               ),
-              Constant.devMode
-                  ? Text('Image Labels by ML\n ${con.tempMemo.imageLabels}')
-                  : const SizedBox(
-                      height: 1.0,
-                    ),
+              // TextFormField(
+              //   enabled: editMode,
+              //   style: Theme.of(context).textTheme.bodyText1,
+              //   decoration: const InputDecoration(
+              //     hintText: 'Enter Shared With: email list',
+              //   ),
+              //   initialValue: con.tempMemo.sharedWith.join(' '),
+              //   keyboardType: TextInputType.multiline,
+              //   maxLines: 6,
+              //   validator: PhotoMemo.validateSharedWith,
+              //   onSaved: con.saveShareWith,
+              // ),
+              // Constant.devMode
+              //     ? Text('Image Labels by ML\n ${con.tempMemo.imageLabels}')
+              //     : const SizedBox(
+              //         height: 1.0,
+              //       ),
             ],
           ),
         ),
@@ -202,6 +220,9 @@ class _Controller {
       if (!listEquals(tempMemo.sharedWith, state.widget.photoMemo.sharedWith)) {
         update[DocKeyPhotoMemo.sharedWith.name] = tempMemo.sharedWith;
       }
+      if (!listEquals(tempMemo.comments, state.widget.photoMemo.comments)) {
+        update[DocKeyPhotoMemo.comments.name] = tempMemo.comments;
+      }
       if (update.isNotEmpty) {
         tempMemo.timeStamp = DateTime.now();
         update[DocKeyPhotoMemo.timestamp.name] = tempMemo.timeStamp;
@@ -257,6 +278,25 @@ class _Controller {
       tempMemo.sharedWith = emailList;
     } else {
       tempMemo.sharedWith = [];
+    }
+  }
+
+  void addComment() {
+    update();
+    // if (value != null && value.trim().isNotEmpty) {
+    //   tempMemo.comments =
+    //       value.trim().split(RegExp('')).map((e) => e.trim()).toList();
+    // } else {
+    //   tempMemo.comments = [];
+    // }
+  }
+
+  void saveComment(String? value) {
+    if (value != null && value.trim().isNotEmpty) {
+      tempMemo.comments =
+          value.trim().split(RegExp('  ')).map((e) => e.trim()).toList();
+    } else {
+      tempMemo.comments = [];
     }
   }
 }

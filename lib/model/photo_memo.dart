@@ -8,7 +8,8 @@ enum DocKeyPhotoMemo {
   photoURL,
   timestamp,
   imageLabels,
-  sharedWith
+  sharedWith,
+  comments
 }
 
 class PhotoMemo {
@@ -21,6 +22,7 @@ class PhotoMemo {
   DateTime? timeStamp;
   late List<dynamic> imageLabels; // ML generated image labels
   late List<dynamic> sharedWith; // list of emails
+  late List<dynamic> comments;
 
   PhotoMemo({
     this.docId,
@@ -32,9 +34,11 @@ class PhotoMemo {
     this.timeStamp,
     List<dynamic>? imageLabels,
     List<dynamic>? sharedWith,
+    List<dynamic>? comments,
   }) {
     this.imageLabels = imageLabels == null ? [] : [...imageLabels];
     this.sharedWith = sharedWith == null ? [] : [...sharedWith];
+    this.comments = comments == null ? [] : [...comments];
   }
 
   PhotoMemo.clone(PhotoMemo p) {
@@ -47,6 +51,7 @@ class PhotoMemo {
     timeStamp = p.timeStamp;
     sharedWith = [...p.sharedWith];
     imageLabels = [...p.imageLabels];
+    comments = [...p.comments];
   }
 
   // a.copyFrom(b) ==> a = b
@@ -62,6 +67,8 @@ class PhotoMemo {
     sharedWith.addAll(p.sharedWith);
     imageLabels.clear();
     imageLabels.addAll(p.imageLabels);
+    comments.clear();
+    comments.addAll(p.comments);
   }
 
   // serialization
@@ -75,6 +82,7 @@ class PhotoMemo {
       DocKeyPhotoMemo.timestamp.name: timeStamp,
       DocKeyPhotoMemo.sharedWith.name: sharedWith,
       DocKeyPhotoMemo.imageLabels.name: imageLabels,
+      DocKeyPhotoMemo.comments.name: comments,
     };
   }
 
@@ -92,6 +100,7 @@ class PhotoMemo {
       photoURL: doc[DocKeyPhotoMemo.photoURL.name] ??= 'N/A',
       sharedWith: doc[DocKeyPhotoMemo.sharedWith.name] ??= [],
       imageLabels: doc[DocKeyPhotoMemo.imageLabels.name] ??= [],
+      comments: doc[DocKeyPhotoMemo.comments.name] ??= [],
       timeStamp: doc[DocKeyPhotoMemo.timestamp.name] != null
           ? DateTime.fromMillisecondsSinceEpoch(
               doc[DocKeyPhotoMemo.timestamp.name].millisecondsSinceEpoch,
@@ -122,5 +131,9 @@ class PhotoMemo {
         return 'Invalid email address found: comma, semicolon. space separated list';
       }
     }
+  }
+
+  static String? validateComment(String? value) {
+    return (value == null || value.isEmpty) ? 'Comment too short' : null;
   }
 }

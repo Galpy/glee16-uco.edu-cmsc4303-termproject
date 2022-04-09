@@ -1,7 +1,7 @@
 //import 'dart:html';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lesson3/controller/auth_controller.dart';
 import 'package:lesson3/controller/cloudstorage_controller.dart';
@@ -13,6 +13,7 @@ import 'package:lesson3/viewscreen/detailedview_screen.dart';
 import 'package:lesson3/viewscreen/sharedwith_screen.dart';
 import 'package:lesson3/viewscreen/view/view_util.dart';
 import 'package:lesson3/viewscreen/view/webimage.dart';
+import 'package:paginate_firestore/paginate_firestore.dart';
 
 class UserHomeScreen extends StatefulWidget {
   static const routeName = '/userHomeScreen';
@@ -98,7 +99,7 @@ class _UserHomeState extends State<UserHomeScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.people),
-                title: const Text('Shared with'),
+                title: const Text('Direct Messages'),
                 onTap: con.sharedWith,
               ),
               ListTile(
@@ -118,9 +119,14 @@ class _UserHomeState extends State<UserHomeScreen> {
                 'No PhotoMemo Found!',
                 style: Theme.of(context).textTheme.headline6,
               )
-            : ListView.builder(
-                itemCount: con.photoMemoList.length,
-                itemBuilder: (context, index) {
+            : PaginateFirestore(
+                itemsPerPage: 8,
+                query: FirebaseFirestore.instance
+                    .collection(Constant.photoMemoCollection)
+                    .orderBy(DocKeyPhotoMemo.title.name),
+                itemBuilderType: PaginateBuilderType.listView,
+                itemBuilder: (context, photoMemoList, index) {
+                  final data = photoMemoList[index].data() as Map?;
                   return Container(
                     margin: const EdgeInsets.all(10.0),
                     child: ListTile(
@@ -141,15 +147,17 @@ class _UserHomeState extends State<UserHomeScreen> {
                           Text('1'),
                         ],
                       ),
-                      title: Column(
-                        children: [
-                          WebImage(
-                            url: con.photoMemoList[index].photoURL,
-                            context: context,
-                          ),
-                          Text(con.photoMemoList[index].title),
-                        ],
-                      ),
+                      title: data == null
+                          ? const Text('Error in data')
+                          : Column(
+                              children: [
+                                WebImage(
+                                  url: con.photoMemoList[index].photoURL,
+                                  context: context,
+                                ),
+                                Text(con.photoMemoList[index].title),
+                              ],
+                            ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -169,6 +177,7 @@ class _UserHomeState extends State<UserHomeScreen> {
                     ),
                   );
                 },
+                isLive: true,
               ),
       ),
     );

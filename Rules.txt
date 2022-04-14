@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /photomemo_collection/{doc} {
+    allow create: if request.auth != null;
+    allow update, delete: if request.auth != null && 
+    request.auth.token.email == resource.data.createdBy;
+    allow read: if request.auth != null && 
+    (request.auth.token.email == resource.data.createdBy || 
+    request.auth.token.email in resource.data.sharedWith
+    );
+    }
+  }
+}
+
+
+
+Firebase rules

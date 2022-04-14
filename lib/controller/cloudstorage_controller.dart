@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
 
@@ -32,5 +31,25 @@ class CloudStorageController {
     required String filename,
   }) async {
     await FirebaseStorage.instance.ref().child(filename).delete();
+  }
+
+  static Future<Map<ArgKey, String>> uploadComment({
+    required String comment,
+    String? filename,
+    required String uid,
+    required Function listener,
+  }) async {
+    filename ??= '${Constant.photoFileFolder}/$uid/${const Uuid().v1()}';
+    UploadTask task = FirebaseStorage.instance.ref(filename).putString(comment);
+    task.snapshotEvents.listen((TaskSnapshot event) {
+      int progress = (event.bytesTransferred / event.totalBytes * 100).toInt();
+      listener(progress);
+    });
+    TaskSnapshot snapshot = await task;
+    String photoComment = await snapshot.ref.name;
+    return {
+      ArgKey.comment: photoComment,
+      ArgKey.filename: filename,
+    };
   }
 }

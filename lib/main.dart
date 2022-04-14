@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:lesson3/viewscreen/addcomment_screen.dart';
 import 'package:lesson3/viewscreen/addphotomemo_screen.dart';
 import 'package:lesson3/viewscreen/detailedview_screen.dart';
 import 'package:lesson3/viewscreen/error_screen.dart';
@@ -80,6 +81,22 @@ class Lesson3App extends StatelessWidget {
             return SharedWithScreen(
               user: user,
               photoMemoList: photoMemoList,
+            );
+          }
+        },
+        AddCommentScreen.routeName: (context) {
+          Object? args = ModalRoute.of(context)?.settings.arguments;
+          if (args == null) {
+            return const ErrorScreen('args is null for AddCommentScreen');
+          } else {
+            var argument = args as Map;
+            var photoMemo = argument[ArgKey.onePhotoMemo.name];
+            var user = argument[ArgKey.user];
+            var commentList = argument[ArgKey.commentList];
+            return AddCommentScreen(
+              user: user,
+              photoMemo: photoMemo,
+              commentList: commentList,
             );
           }
         },

@@ -18,4 +18,3 @@ class AuthController {
         .createUserWithEmailAndPassword(email: email, password: password);
   }
 }
-

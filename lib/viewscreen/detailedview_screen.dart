@@ -8,8 +8,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lesson3/controller/cloudstorage_controller.dart';
 import 'package:lesson3/controller/firestore_controller.dart';
 import 'package:lesson3/controller/ml_controller.dart';
+import 'package:lesson3/model/comments.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/photo_memo.dart';
+import 'package:lesson3/viewscreen/addcomment_screen.dart';
 import 'package:lesson3/viewscreen/view/view_util.dart';
 import 'package:lesson3/viewscreen/view/webimage.dart';
 
@@ -33,7 +35,7 @@ class DetailedViewScreen extends StatefulWidget {
 class _DetailedViewState extends State<DetailedViewScreen> {
   late _Controller con;
   bool editMode = false;
-  var formkey = GlobalKey<FormState>();
+  var formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -55,7 +57,7 @@ class _DetailedViewState extends State<DetailedViewScreen> {
         ],
       ),
       body: Form(
-        key: formkey,
+        key: formKey,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,15 +133,6 @@ class _DetailedViewState extends State<DetailedViewScreen> {
               ),
               Column(
                 children: [
-                  TextFormField(
-                    enabled: true,
-                    style: Theme.of(context).textTheme.headline6,
-                    decoration:
-                        const InputDecoration(hintText: 'Enter comment'),
-                    initialValue: con.tempMemo.comments.join('\n'),
-                    validator: PhotoMemo.validateComment,
-                    onSaved: con.saveComment,
-                  ),
                   IconButton(
                     onPressed: con.addComment,
                     icon: const Icon(Icons.comment),
@@ -174,14 +167,17 @@ class _DetailedViewState extends State<DetailedViewScreen> {
 class _Controller {
   _DetailedViewState state;
   late PhotoMemo tempMemo;
+  late List<Comments> commentList;
+  late PhotoMemo photoMemo;
   File? photo;
   String? progressMessage;
   _Controller(this.state) {
-    tempMemo = PhotoMemo.clone(state.widget.photoMemo);
+    photoMemo = state.widget.photoMemo;
+    tempMemo = PhotoMemo.clone(photoMemo);
   }
 
   void update() async {
-    FormState? currentState = state.formkey.currentState;
+    FormState? currentState = state.formKey.currentState;
     if (currentState == null) return;
     if (!currentState.validate()) return;
     currentState.save();
@@ -220,9 +216,6 @@ class _Controller {
       if (!listEquals(tempMemo.sharedWith, state.widget.photoMemo.sharedWith)) {
         update[DocKeyPhotoMemo.sharedWith.name] = tempMemo.sharedWith;
       }
-      if (!listEquals(tempMemo.comments, state.widget.photoMemo.comments)) {
-        update[DocKeyPhotoMemo.comments.name] = tempMemo.comments;
-      }
       if (update.isNotEmpty) {
         tempMemo.timeStamp = DateTime.now();
         update[DocKeyPhotoMemo.timestamp.name] = tempMemo.timeStamp;
@@ -239,6 +232,14 @@ class _Controller {
       showSnackBar(
           context: state.context, seconds: 20, message: 'failed to update: $e');
     }
+  }
+
+  void save() async {
+    FormState? currentState = state.formKey.currentState;
+    if (currentState == null || !currentState.validate()) {
+      return;
+    }
+    currentState.save();
   }
 
   void edit() {
@@ -281,22 +282,20 @@ class _Controller {
     }
   }
 
-  void addComment() {
-    update();
-    // if (value != null && value.trim().isNotEmpty) {
-    //   tempMemo.comments =
-    //       value.trim().split(RegExp('')).map((e) => e.trim()).toList();
-    // } else {
-    //   tempMemo.comments = [];
-    // }
-  }
-
-  void saveComment(String? value) {
-    if (value != null && value.trim().isNotEmpty) {
-      tempMemo.comments =
-          value.trim().split(RegExp('  ')).map((e) => e.trim()).toList();
-    } else {
-      tempMemo.comments = [];
-    }
+  void addComment() async {
+    FormState? currentState = state.formKey.currentState;
+    if (currentState == null) return;
+    if (!currentState.validate()) return;
+    currentState.save();
+    print(photoMemo.docId);
+    List<Comments> commentList =
+        await FireStoreController.getCommentList(photoMemo: photoMemo);
+    await Navigator.pushNamed(state.context, AddCommentScreen.routeName,
+        arguments: {
+          ArgKey.user: state.widget.user,
+          ArgKey.commentList: commentList,
+          ArgKey.onePhotoMemo: photoMemo,
+        });
+    state.render(() {});
   }
 }

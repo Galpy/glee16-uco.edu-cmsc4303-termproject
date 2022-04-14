@@ -120,63 +120,58 @@ class _UserHomeState extends State<UserHomeScreen> {
                 style: Theme.of(context).textTheme.headline6,
               )
             : PaginateFirestore(
-                itemsPerPage: 8,
+                itemsPerPage: 4,
                 query: FirebaseFirestore.instance
                     .collection(Constant.photoMemoCollection)
-                    .orderBy(DocKeyPhotoMemo.title.name),
+                    .orderBy(DocKeyPhotoMemo.title.name)
+                    .limit(Constant.photoMemoCollection.length),
                 itemBuilderType: PaginateBuilderType.listView,
-                itemBuilder: (context, photoMemoList, index) {
-                  final data = photoMemoList[index].data() as Map?;
-                  return Container(
-                    margin: const EdgeInsets.all(10.0),
-                    child: ListTile(
-                      selected: con.selected.contains(index),
-                      selectedTileColor: Colors.blue[100],
-                      tileColor: Colors.white,
-                      leading: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: const [
-                          Icon(Icons.thumb_up_sharp),
-                          Text('10'),
-                        ],
-                      ),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: const [
-                          Icon(Icons.thumb_down_sharp),
-                          Text('1'),
-                        ],
-                      ),
-                      title: data == null
-                          ? const Text('Error in data')
-                          : Column(
-                              children: [
-                                WebImage(
-                                  url: con.photoMemoList[index].photoURL,
-                                  context: context,
-                                ),
-                                Text(con.photoMemoList[index].title),
-                              ],
-                            ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            con.photoMemoList[index].memo.length >= 40
-                                ? con.photoMemoList[index].memo
-                                        .substring(0, 40) +
-                                    '...'
-                                : con.photoMemoList[index].memo,
-                          ),
-                          Text(
-                              'Created By: ${con.photoMemoList[index].createdBy}'),
-                        ],
-                      ),
-                      onTap: () => con.onTap(index),
-                      onLongPress: () => con.onLongPress(index),
+                itemBuilder: (context, photoMemoList, index) => Container(
+                  margin: const EdgeInsets.all(10.0),
+                  child: ListTile(
+                    selected: con.selected.contains(index),
+                    selectedTileColor: Colors.blue[100],
+                    tileColor: Colors.white,
+                    leading: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: const [
+                        Icon(Icons.thumb_up_sharp),
+                        Text('10'),
+                      ],
                     ),
-                  );
-                },
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: const [
+                        Icon(Icons.thumb_down_sharp),
+                        Text('1'),
+                      ],
+                    ),
+                    title: Column(
+                      children: [
+                        WebImage(
+                          url: con.photoMemoList[index].photoURL,
+                          context: context,
+                        ),
+                        Text(con.photoMemoList[index].title),
+                      ],
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          con.photoMemoList[index].memo.length >= 40
+                              ? con.photoMemoList[index].memo.substring(0, 40) +
+                                  '...'
+                              : con.photoMemoList[index].memo,
+                        ),
+                        Text(
+                            'Created By: ${con.photoMemoList[index].createdBy}'),
+                      ],
+                    ),
+                    onTap: () => con.onTap(index),
+                    onLongPress: () => con.onLongPress(index),
+                  ),
+                ),
                 isLive: true,
               ),
       ),
@@ -315,12 +310,14 @@ class _Controller {
       onLongPress(index);
       return;
     }
-    await Navigator.pushNamed(state.context, DetailedViewScreen.routeName,
-        arguments: {
-          ArgKey.user: state.widget.user,
-          ArgKey.onePhotoMemo: photoMemoList[index],
-        });
-    state.render(() {});
+    Navigator.pushNamed(
+      state.context,
+      DetailedViewScreen.routeName,
+      arguments: {
+        ArgKey.user: state.widget.user,
+        ArgKey.onePhotoMemo: photoMemoList[index],
+      },
+    );
   }
 
   void onLongPress(int index) {

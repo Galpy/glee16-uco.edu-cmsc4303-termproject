@@ -1,11 +1,11 @@
 //import 'dart:html';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lesson3/controller/auth_controller.dart';
 import 'package:lesson3/controller/cloudstorage_controller.dart';
 import 'package:lesson3/controller/firestore_controller.dart';
+import 'package:lesson3/model/comments.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/photo_memo.dart';
 import 'package:lesson3/viewscreen/addphotomemo_screen.dart';
@@ -13,7 +13,6 @@ import 'package:lesson3/viewscreen/detailedview_screen.dart';
 import 'package:lesson3/viewscreen/sharedwith_screen.dart';
 import 'package:lesson3/viewscreen/view/view_util.dart';
 import 'package:lesson3/viewscreen/view/webimage.dart';
-import 'package:paginate_firestore/paginate_firestore.dart';
 
 class UserHomeScreen extends StatefulWidget {
   static const routeName = '/userHomeScreen';
@@ -31,15 +30,66 @@ class UserHomeScreen extends StatefulWidget {
 }
 
 class _UserHomeState extends State<UserHomeScreen> {
+  final ScrollController _scrollController = ScrollController();
   late _Controller con;
   late final String email;
+  late final List<PhotoMemo> newList;
   var formKey = GlobalKey<FormState>();
+  List<PhotoMemo> items = [];
+  bool loading = false, allLoaded = false;
 
   @override
   void initState() {
     super.initState();
+    newList = widget.photoMemoList;
+    mockFetch();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent &&
+          !loading) {
+        mockFetch();
+      }
+    });
     con = _Controller(this);
     email = widget.user.email ?? ' No email';
+  }
+
+  mockFetch() async {
+    if (allLoaded) {
+      return;
+    }
+    setState(() {
+      loading = true;
+    });
+
+    List<PhotoMemo> newData = items.length >= newList.length
+        ? []
+        : newList.length < 8
+            ? List<PhotoMemo>.generate(
+                newList.length,
+                (index) => index <= newList.length
+                    ? newList[index]
+                    : newList[index + items.length],
+                growable: false)
+            : List<PhotoMemo>.generate(
+                8,
+                (index) => index <= newList.length
+                    ? newList[index]
+                    : newList[index + items.length],
+                growable: false);
+    if (newData.isNotEmpty) {
+      items.addAll(newData);
+    }
+    setState(() {
+      loading = false;
+      allLoaded = newData.isEmpty;
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.dispose();
   }
 
   void render(fn) => setState(fn);
@@ -114,66 +164,129 @@ class _UserHomeState extends State<UserHomeScreen> {
           onPressed: con.addButton,
           child: const Icon(Icons.add),
         ),
-        body: con.photoMemoList.isEmpty
-            ? Text(
-                'No PhotoMemo Found!',
-                style: Theme.of(context).textTheme.headline6,
-              )
-            : PaginateFirestore(
-                itemsPerPage: 4,
-                query: FirebaseFirestore.instance
-                    .collection(Constant.photoMemoCollection)
-                    .orderBy(DocKeyPhotoMemo.title.name)
-                    .limit(Constant.photoMemoCollection.length),
-                itemBuilderType: PaginateBuilderType.listView,
-                itemBuilder: (context, photoMemoList, index) => Container(
-                  margin: const EdgeInsets.all(10.0),
-                  child: ListTile(
-                    selected: con.selected.contains(index),
-                    selectedTileColor: Colors.blue[100],
-                    tileColor: Colors.white,
-                    leading: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: const [
-                        Icon(Icons.thumb_up_sharp),
-                        Text('10'),
-                      ],
-                    ),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: const [
-                        Icon(Icons.thumb_down_sharp),
-                        Text('1'),
-                      ],
-                    ),
-                    title: Column(
-                      children: [
-                        WebImage(
-                          url: con.photoMemoList[index].photoURL,
-                          context: context,
-                        ),
-                        Text(con.photoMemoList[index].title),
-                      ],
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          con.photoMemoList[index].memo.length >= 40
-                              ? con.photoMemoList[index].memo.substring(0, 40) +
-                                  '...'
-                              : con.photoMemoList[index].memo,
-                        ),
-                        Text(
-                            'Created By: ${con.photoMemoList[index].createdBy}'),
-                      ],
-                    ),
-                    onTap: () => con.onTap(index),
-                    onLongPress: () => con.onLongPress(index),
+        body: LayoutBuilder(
+          builder: ((context, constraints) {
+            if (items.isNotEmpty) {
+              return Stack(
+                children: [
+                  ListView.separated(
+                    controller: _scrollController,
+                    itemBuilder: (context, index) {
+                      if (index < newList.length) {
+                        return ListTile(
+                          title: Container(
+                            margin: const EdgeInsets.all(10.0),
+                            child: ListTile(
+                              minVerticalPadding: 8.0,
+                              selected: con.selected.contains(index),
+                              selectedTileColor: Colors.blue[100],
+                              tileColor: Colors.white,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Column(
+                                    children: [
+                                      Text(
+                                        newList[index].likes.toString(),
+                                      ),
+                                      IconButton(
+                                        onPressed: () =>
+                                            con.like(newList[index]),
+                                        icon: const Icon(
+                                          Icons.thumb_up_sharp,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    children: [
+                                      DocKeyComments.photoDocId.name !=
+                                              newList[index].docId
+                                          ? const Text("")
+                                          : const Icon(Icons.done),
+                                      SizedBox(
+                                        width: 200.0,
+                                        child: WebImage(
+                                          url: newList[index].photoURL,
+                                          context: context,
+                                        ),
+                                      ),
+                                      Text(newList[index].title),
+                                    ],
+                                  ),
+                                  Column(
+                                    children: [
+                                      Text(
+                                        newList[index].dislikes.toString(),
+                                      ),
+                                      IconButton(
+                                        onPressed: () =>
+                                            con.dislike(newList[index]),
+                                        icon: const Icon(
+                                          Icons.thumb_down_sharp,
+                                          size: 26.0,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    con.photoMemoList[index].memo.length >= 60
+                                        ? con.photoMemoList[index].memo
+                                                .substring(0, 60) +
+                                            '...'
+                                        : con.photoMemoList[index].memo,
+                                  ),
+                                  Text(
+                                      'Created By: ${con.photoMemoList[index].createdBy}'),
+                                ],
+                              ),
+                              onTap: () => con.onTap(index),
+                              onLongPress: () => con.onLongPress(index),
+                            ),
+                          ),
+                        );
+                      } else {
+                        return SizedBox(
+                          width: constraints.maxWidth,
+                          height: 50,
+                          child: const Center(
+                            child: Text("Nothing more to load"),
+                          ),
+                        );
+                      }
+                    },
+                    separatorBuilder: (context, index) {
+                      return const Divider(
+                        height: 1,
+                      );
+                    },
+                    itemCount: newList.length + (allLoaded ? 1 : 0),
                   ),
-                ),
-                isLive: true,
-              ),
+                  if (loading) ...[
+                    Positioned(
+                      left: 0,
+                      bottom: 0,
+                      child: SizedBox(
+                        width: constraints.maxWidth,
+                        height: 80,
+                        child: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            } else {
+              return const Text("No PhotoMemos available!");
+            }
+          }),
+        ),
       ),
     );
   }
@@ -187,6 +300,38 @@ class _Controller {
 
   _Controller(this.state) {
     photoMemoList = state.widget.photoMemoList;
+  }
+
+  void addComment(String? docId) async {
+    FormState? currentState = state.formKey.currentState;
+    if (currentState == null) return;
+    if (!currentState.validate()) return;
+    currentState.save();
+    List<Comments> commentList =
+        await FireStoreController.getCommentList(docId: docId);
+  }
+
+  void like(PhotoMemo index) {
+    // want to get the current number of likes and increment and store in firebase.
+    Map<String, dynamic> update = {};
+    int currentLikes = index.likes;
+    currentLikes++;
+    update[DocKeyPhotoMemo.likes.name] = currentLikes;
+    FireStoreController.updatePhotoMemo(docId: index.docId!, update: update);
+    state.setState(() {
+      index.likes = currentLikes;
+    });
+  }
+
+  void dislike(PhotoMemo index) {
+    Map<String, dynamic> update = {};
+    int currentDislikes = index.dislikes;
+    currentDislikes++;
+    update[DocKeyPhotoMemo.dislikes.name] = currentDislikes;
+    FireStoreController.updatePhotoMemo(docId: index.docId!, update: update);
+    state.setState(() {
+      index.dislikes = currentDislikes;
+    });
   }
 
   void sharedWith() async {

@@ -9,6 +9,8 @@ enum DocKeyPhotoMemo {
   timestamp,
   imageLabels,
   sharedWith,
+  likes,
+  dislikes,
 }
 
 class PhotoMemo {
@@ -21,6 +23,8 @@ class PhotoMemo {
   DateTime? timeStamp;
   late List<dynamic> imageLabels; // ML generated image labels
   late List<dynamic> sharedWith; // list of emails
+  late int likes;
+  late int dislikes;
 
   PhotoMemo({
     this.docId,
@@ -30,6 +34,8 @@ class PhotoMemo {
     this.photoFilename = '',
     this.photoURL = '',
     this.timeStamp,
+    this.likes = 0,
+    this.dislikes = 0,
     List<dynamic>? imageLabels,
     List<dynamic>? sharedWith,
   }) {
@@ -47,6 +53,8 @@ class PhotoMemo {
     timeStamp = p.timeStamp;
     sharedWith = [...p.sharedWith];
     imageLabels = [...p.imageLabels];
+    likes = p.likes;
+    dislikes = p.dislikes;
   }
 
   // a.copyFrom(b) ==> a = b
@@ -62,6 +70,8 @@ class PhotoMemo {
     sharedWith.addAll(p.sharedWith);
     imageLabels.clear();
     imageLabels.addAll(p.imageLabels);
+    likes = p.likes;
+    dislikes = p.dislikes;
   }
 
   // serialization
@@ -75,6 +85,8 @@ class PhotoMemo {
       DocKeyPhotoMemo.timestamp.name: timeStamp,
       DocKeyPhotoMemo.sharedWith.name: sharedWith,
       DocKeyPhotoMemo.imageLabels.name: imageLabels,
+      DocKeyPhotoMemo.likes.name: likes,
+      DocKeyPhotoMemo.dislikes.name: dislikes,
     };
   }
 
@@ -97,6 +109,8 @@ class PhotoMemo {
               doc[DocKeyPhotoMemo.timestamp.name].millisecondsSinceEpoch,
             )
           : DateTime.now(),
+      likes: doc[DocKeyPhotoMemo.likes.name] ??= 'N/A',
+      dislikes: doc[DocKeyPhotoMemo.dislikes.name] ??= 'N/A',
     );
   }
 

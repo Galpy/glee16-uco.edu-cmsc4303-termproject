@@ -22,12 +22,38 @@ class FireStoreController {
     return ref.id;
   }
 
-  static Future<List<Comments>> getCommentList({
-    required PhotoMemo photoMemo,
+  Future<String?> getDocId({
+    required String? docId,
   }) async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(Constant.commentCollection)
-        .where(DocKeyComments.photoId.name, isEqualTo: photoMemo.docId!)
+        .where(DocKeyComments.photoDocId.name, isEqualTo: docId!)
+        .orderBy(
+          DocKeyComments.timeStamp.name,
+          descending: true,
+        )
+        .get();
+
+    var result = <Comments>[];
+    for (var doc in querySnapshot.docs) {
+      if (doc.data() != null) {
+        var document = doc.data() as Map<String, dynamic>;
+        var p = Comments.fromFirestoreDoc(doc: document, docId: doc.id);
+        if (p != null) {
+          result.add(p);
+        }
+      }
+    }
+    return result.length.toString();
+  }
+
+  static Future<List<Comments>> getCommentList({
+    required String? docId,
+  }) async {
+    print(docId);
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constant.commentCollection)
+        .where(DocKeyComments.photoDocId.name, isEqualTo: docId!)
         .orderBy(
           DocKeyComments.timeStamp.name,
           descending: true,

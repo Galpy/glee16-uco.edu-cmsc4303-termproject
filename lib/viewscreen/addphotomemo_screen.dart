@@ -181,6 +181,8 @@ class _Controller {
           });
         },
       );
+      tempMemo.likes = 0;
+      tempMemo.dislikes = 0;
       tempMemo.photoFilename = result[ArgKey.filename];
       tempMemo.photoURL = result[ArgKey.downloadURL];
       tempMemo.imageLabels =

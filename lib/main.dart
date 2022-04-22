@@ -90,12 +90,12 @@ class Lesson3App extends StatelessWidget {
             return const ErrorScreen('args is null for AddCommentScreen');
           } else {
             var argument = args as Map;
-            var photoMemo = argument[ArgKey.onePhotoMemo.name];
+            var photoDocId = argument[ArgKey.photoDocId];
             var user = argument[ArgKey.user];
             var commentList = argument[ArgKey.commentList];
             return AddCommentScreen(
               user: user,
-              photoMemo: photoMemo,
+              photoDocId: photoDocId,
               commentList: commentList,
             );
           }

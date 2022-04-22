@@ -13,5 +13,5 @@ enum ArgKey {
   onePhotoMemo,
   commentList,
   comment,
-  photoMemo,
+  photoDocId,
 }

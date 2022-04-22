@@ -1,34 +1,38 @@
 enum DocKeyComments {
-  photoAttached,
+  createdBy,
+  photoDocId,
   comment,
-  photoId,
   timeStamp,
 }
 
 class Comments {
   String? docId;
+  late String createdBy; //email = user id
   late String comment;
-  late String photoId;
+  late String photoDocId; // image/photo at Cloud Storage
   DateTime? timeStamp;
 
   Comments({
     String? docId,
+    this.createdBy = '',
     this.comment = '',
-    this.photoId = '',
+    this.photoDocId = '',
     this.timeStamp,
   });
 
   Comments.clone(Comments p) {
+    createdBy = p.createdBy;
     docId = p.docId;
     comment = p.comment;
-    photoId = p.photoId;
+    photoDocId = p.photoDocId;
     timeStamp = p.timeStamp;
   }
 
   void copyFrom(Comments p) {
+    createdBy = p.createdBy;
     docId = p.docId;
     comment = p.comment;
-    photoId = p.photoId;
+    photoDocId = p.photoDocId;
     timeStamp = p.timeStamp;
   }
 
@@ -36,8 +40,9 @@ class Comments {
   Map<String, dynamic> toFirestoreDoc() {
     return {
       DocKeyComments.comment.name: comment,
-      DocKeyComments.photoId.name: photoId,
+      DocKeyComments.photoDocId.name: photoDocId,
       DocKeyComments.timeStamp.name: timeStamp,
+      DocKeyComments.createdBy.name: createdBy,
     };
   }
 
@@ -47,8 +52,9 @@ class Comments {
   }) {
     return Comments(
       docId: docId,
+      createdBy: doc[DocKeyComments.createdBy.name] ??= 'N/A',
       comment: doc[DocKeyComments.comment.name] ??= 'N/A',
-      photoId: doc[DocKeyComments.photoId.name] ??= 'N/A',
+      photoDocId: doc[DocKeyComments.photoDocId.name] ??= 'N/A',
       timeStamp: doc[DocKeyComments.timeStamp.name] != null
           ? DateTime.fromMillisecondsSinceEpoch(
               doc[DocKeyComments.timeStamp.name].millisecondsSinceEpoch,

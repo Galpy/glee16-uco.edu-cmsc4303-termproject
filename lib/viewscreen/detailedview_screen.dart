@@ -133,24 +133,27 @@ class _DetailedViewState extends State<DetailedViewScreen> {
               ),
               Column(
                 children: [
+                  // con.commentList.isNotEmpty
+                  //     ? const Text("No new Comments")
+                  //     : const Icon(Icons.done),
                   IconButton(
                     onPressed: con.addComment,
                     icon: const Icon(Icons.comment),
                   ),
                 ],
               ),
-              // TextFormField(
-              //   enabled: editMode,
-              //   style: Theme.of(context).textTheme.bodyText1,
-              //   decoration: const InputDecoration(
-              //     hintText: 'Enter Shared With: email list',
-              //   ),
-              //   initialValue: con.tempMemo.sharedWith.join(' '),
-              //   keyboardType: TextInputType.multiline,
-              //   maxLines: 6,
-              //   validator: PhotoMemo.validateSharedWith,
-              //   onSaved: con.saveShareWith,
-              // ),
+              TextFormField(
+                enabled: editMode,
+                style: Theme.of(context).textTheme.bodyText1,
+                decoration: const InputDecoration(
+                  hintText: 'Enter Shared With: email list',
+                ),
+                initialValue: con.tempMemo.sharedWith.join(' '),
+                keyboardType: TextInputType.multiline,
+                maxLines: 6,
+                validator: PhotoMemo.validateSharedWith,
+                onSaved: con.saveShareWith,
+              ),
               // Constant.devMode
               //     ? Text('Image Labels by ML\n ${con.tempMemo.imageLabels}')
               //     : const SizedBox(
@@ -287,14 +290,13 @@ class _Controller {
     if (currentState == null) return;
     if (!currentState.validate()) return;
     currentState.save();
-    print(photoMemo.docId);
     List<Comments> commentList =
-        await FireStoreController.getCommentList(photoMemo: photoMemo);
+        await FireStoreController.getCommentList(docId: photoMemo.docId);
     await Navigator.pushNamed(state.context, AddCommentScreen.routeName,
         arguments: {
           ArgKey.user: state.widget.user,
           ArgKey.commentList: commentList,
-          ArgKey.onePhotoMemo: photoMemo,
+          ArgKey.photoDocId: photoMemo.docId,
         });
     state.render(() {});
   }
